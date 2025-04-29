@@ -1,0 +1,290 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "title": "PostgreSQL Detailed Metrics",
+  "uid": "postgres-detailed",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["postgres"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "version": 1,
+  "panels": [
+    {
+      "title": "TOAST Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}
+    },
+    {
+      "title": "TOAST Table Sizes",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "bytes",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "targets": [
+        {
+          "expr": "pg_total_relation_size_bytes{relation=~\".*toast.*\"} - pg_relation_size_bytes{relation=~\".*toast.*\"}",
+          "legendFormat": "{{schema}}.{{relation}}"
+        }
+      ]
+    },
+    {
+      "title": "TOAST Operations Rate",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ops",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_ins{relname=~\".*toast.*\"}[5m])",
+          "legendFormat": "{{schemaname}}.{{relname}} inserts/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_upd{relname=~\".*toast.*\"}[5m])",
+          "legendFormat": "{{schemaname}}.{{relname}} updates/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_del{relname=~\".*toast.*\"}[5m])",
+          "legendFormat": "{{schemaname}}.{{relname}} deletes/sec"
+        }
+      ]
+    },
+    {
+      "title": "TOAST Vacuum Stats",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}
+    },
+    {
+      "title": "TOAST Vacuum Operations",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ops",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_vacuum_count{relname=~\".*toast.*\"}[5m])",
+          "legendFormat": "{{schemaname}}.{{relname}} manual vacuum/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_autovacuum_count{relname=~\".*toast.*\"}[5m])",
+          "legendFormat": "{{schemaname}}.{{relname}} autovacuum/sec"
+        }
+      ]
+    },
+    {
+      "title": "TOAST Dead Tuples",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "none",
+          "decimals": 0
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "targets": [
+        {
+          "expr": "pg_stat_user_tables_n_dead_tup{relname=~\".*toast.*\"}",
+          "legendFormat": "{{schemaname}}.{{relname}} dead tuples"
+        }
+      ]
+    },
+    {
+      "title": "TOAST Table Bloat",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 19}
+    },
+    {
+      "title": "TOAST Table Bloat Size",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "bytes",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "targets": [
+        {
+          "expr": "(pg_total_relation_size_bytes{relation=~\".*toast.*\"} - pg_table_size_bytes{relation=~\".*toast.*\"}) / pg_total_relation_size_bytes{relation=~\".*toast.*\"} * 100",
+          "legendFormat": "{{schema}}.{{relation}} bloat %"
+        }
+      ]
+    },
+    {
+      "title": "TOAST Table Free Space",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "bytes",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "targets": [
+        {
+          "expr": "pg_total_relation_size_bytes{relation=~\".*toast.*\"} - pg_relation_size_bytes{relation=~\".*toast.*\"}",
+          "legendFormat": "{{schema}}.{{relation}} free space"
+        }
+      ]
+    },
+    {
+      "title": "Data Entries Table Stats",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29}
+    },
+    {
+      "title": "Table Operations Rate",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ops",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_ins{relname='data_entries'}[5m])",
+          "legendFormat": "Inserts/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_upd{relname='data_entries'}[5m])",
+          "legendFormat": "Updates/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_del{relname='data_entries'}[5m])",
+          "legendFormat": "Deletes/sec"
+        }
+      ]
+    },
+    {
+      "title": "Table Size and TOAST",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "bytes",
+          "decimals": 2
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30},
+      "targets": [
+        {
+          "expr": "pg_table_size_bytes{relation='data_entries'}",
+          "legendFormat": "Table Size"
+        },
+        {
+          "expr": "pg_total_relation_size_bytes{relation='data_entries'} - pg_table_size_bytes{relation='data_entries'}",
+          "legendFormat": "TOAST Size"
+        }
+      ]
+    },
+    {
+      "title": "Table Scans and Tuples",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 38},
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_seq_scan{relname='data_entries'}[5m])",
+          "legendFormat": "Sequential Scans/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_idx_scan{relname='data_entries'}[5m])",
+          "legendFormat": "Index Scans/sec"
+        },
+        {
+          "expr": "pg_stat_user_tables_n_live_tup{relname='data_entries'}",
+          "legendFormat": "Live Tuples"
+        },
+        {
+          "expr": "pg_stat_user_tables_n_dead_tup{relname='data_entries'}",
+          "legendFormat": "Dead Tuples"
+        }
+      ]
+    },
+    {
+      "title": "Vacuum and Analyze Stats",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 38},
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_vacuum_count{relname='data_entries'}[5m])",
+          "legendFormat": "Manual Vacuum/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_autovacuum_count{relname='data_entries'}[5m])",
+          "legendFormat": "Auto Vacuum/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_analyze_count{relname='data_entries'}[5m])",
+          "legendFormat": "Manual Analyze/sec"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_autoanalyze_count{relname='data_entries'}[5m])",
+          "legendFormat": "Auto Analyze/sec"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s"
+}

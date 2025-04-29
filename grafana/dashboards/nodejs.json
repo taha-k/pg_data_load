@@ -1,0 +1,58 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "title": "Node.js Application Metrics",
+  "uid": "nodejs-metrics",
+  "version": 1,
+  "panels": [
+    {
+      "title": "HTTP Request Rate",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "rate(http_requests_total[5m])",
+        "legendFormat": "Requests/sec"
+      }]
+    },
+    {
+      "title": "Response Time",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
+        "legendFormat": "Average Response Time"
+      }]
+    },
+    {
+      "title": "Memory Usage",
+      "type": "gauge",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{
+        "expr": "process_resident_memory_bytes",
+        "legendFormat": "Memory Usage"
+      }]
+    },
+    {
+      "title": "CPU Usage",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{
+        "expr": "rate(process_cpu_user_seconds_total[5m])",
+        "legendFormat": "CPU Usage"
+      }]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  }
+}
