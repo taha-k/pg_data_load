@@ -44,7 +44,7 @@ const readCounter = new promClient.Counter({
 const jsonData = JSON.parse(fs.readFileSync('./src/20mb.json', 'utf8'));
 
 // Function to generate random data
-function generateRandomData() {
+function generateRandomData(small = false) {
   const dataTypes = ['sensor', 'system', 'application'];
   const eventTypes = ['info', 'warning', 'error', 'debug'];
   
@@ -62,7 +62,7 @@ function generateRandomData() {
       `datacenter-${Math.floor(Math.random() * 3)}`,
       `server-${Math.floor(Math.random() * 10)}`
     ],
-    jsonData: jsonData,
+    ...(small ? {} : { jsonData: jsonData }), // Include large JSON data if not small
     status: Math.random() > 0.9 ? 'error' : 'ok' // 10% chance of error
   };
 }
@@ -72,11 +72,13 @@ async function insertData() {
   const end = dbQueryDuration.startTimer({ operation: 'insert' });
   try {
     const payload = generateRandomData();
+    const smallPayload = generateRandomData(true);
     const [result] = await db('data_entries')
       .insert({
-        payload
+        payload,
+        payload2: smallPayload,
       })
-      .returning(['id', 'payload', 'created_at', 'updated_at']);
+      .returning(['id', 'payload', 'small_payload', 'created_at', 'updated_at']);
     
     insertCounter.inc();
     console.log('Inserted entry:', {

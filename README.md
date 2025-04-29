@@ -27,6 +27,12 @@ docker-compose up -d
 - Grafana: http://localhost:3001 (admin/admin)
 - PostgreSQL: localhost:5432
 
+## Open psql in terminal after the container is running
+
+```bash
+docker-compose exec -it postgres psql -U postgres -d testdb
+```
+
 ## Monitoring
 
 The setup includes comprehensive monitoring:
