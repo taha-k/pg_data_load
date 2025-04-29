@@ -36,3 +36,58 @@ WHERE relname = 'pg_toast_' || (SELECT oid
 )
 );
 ```
+
+## sizez for main table and TOAST table
+```
+SELECT 
+    c.relname AS main_table,
+    pg_size_pretty(pg_table_size(c.oid)) AS main_table_size,
+    pg_size_pretty(pg_total_relation_size(c.reltoastrelid)) AS toast_table_size
+FROM pg_class c
+WHERE c.relname = 'data_entries';
+```
+
+## Get TOAST Statistics and table size in single query
+```
+WITH input_table AS (
+    SELECT 'data_entries' AS table_name -- Specify the table name here
+),
+main_and_toast_stats AS (
+    -- Stats for the main table
+    SELECT 
+        psat.*, 
+        ts.main_table_size AS table_size, 
+        CURRENT_TIMESTAMP AS query_timestamp
+    FROM pg_stat_all_tables psat
+    JOIN (
+        SELECT 
+            pg_size_pretty(pg_table_size(c.oid)) AS main_table_size
+        FROM pg_class c
+        WHERE c.relname = (SELECT table_name FROM input_table)
+    ) ts ON TRUE
+    WHERE psat.relname = (SELECT table_name FROM input_table)
+
+    UNION ALL
+
+    -- Stats for the TOAST table
+    SELECT 
+        psat.*, 
+        ts.toast_table_size AS table_size, 
+        CURRENT_TIMESTAMP AS query_timestamp
+    FROM pg_stat_all_tables psat
+    JOIN (
+        SELECT 
+            pg_size_pretty(pg_total_relation_size(c.reltoastrelid)) AS toast_table_size
+        FROM pg_class c
+        WHERE c.relname = (SELECT table_name FROM input_table)
+    ) ts ON TRUE
+    WHERE psat.relid = (
+        SELECT reltoastrelid
+        FROM pg_class
+        WHERE relname = (SELECT table_name FROM input_table)
+    )
+)
+SELECT 
+    ms.* 
+FROM main_and_toast_stats ms;
+```
