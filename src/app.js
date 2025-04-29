@@ -21,6 +21,14 @@ promClient.collectDefaultMetrics({ register });
 app.use(metricsMiddleware(register));
 
 // Custom metrics
+// Operation Status Counters
+const operationStatus = new promClient.Counter({
+  name: 'db_operation_status_total',
+  help: 'Status of database operations',
+  labelNames: ['operation', 'status'],
+  registers: [register]
+});
+
 const dbUpdateDuration = new promClient.Histogram({
   name: 'db_update_duration_seconds',
   help: 'Duration of PostgreSQL update operations in seconds',
@@ -95,6 +103,7 @@ async function insertData() {
       .returning(['id', 'payload', 'small_payload', 'created_at', 'updated_at']);
     
     insertCounter.inc();
+    operationStatus.labels('insert', 'success').inc();
     console.log('Inserted entry:', {
       id: result.id,
       payload: result.payload,
@@ -103,6 +112,7 @@ async function insertData() {
     });
   } catch (err) {
     console.error('Error inserting data:', err);
+    operationStatus.labels('insert', 'error').inc();
   }
   end();
 }
@@ -117,6 +127,7 @@ async function readData() {
       .limit(5);
     
     readCounter.inc();
+    operationStatus.labels('read', 'success').inc();
     console.log('Latest entries:', results.map(r => ({
       id: r.id,
       type: r.payload.type,
@@ -127,6 +138,7 @@ async function readData() {
     return results;
   } catch (err) {
     console.error('Error reading data:', err);
+    operationStatus.labels('read', 'error').inc();
     return [];
   } finally {
     end();
@@ -170,9 +182,11 @@ async function updateRandomRows() {
     }
     
     updateCounter.inc(rows.length);
+    operationStatus.labels('update', 'success').inc(rows.length);
     console.log(`Updated ${rows.length} rows with new small_payload data`);
   } catch (err) {
     console.error('Error updating random rows:', err);
+    operationStatus.labels('update', 'error').inc();
   }
   end();
 }

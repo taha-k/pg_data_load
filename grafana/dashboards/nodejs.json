@@ -75,6 +75,64 @@
         "format": "heatmap",
         "legendFormat": "{{le}}"
       }]
+    },
+    {
+      "title": "Database Operation Status Rate",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [{
+        "expr": "rate(db_operation_status_total[5m])",
+        "legendFormat": "{{operation}} - {{status}}"
+      }],
+      "legend": {
+        "show": true,
+        "values": true,
+        "current": true
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Operations/sec"
+        },
+        {
+          "format": "short",
+          "show": false
+        }
+      ]
+    },
+    {
+      "title": "Operation Success Rates",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(db_operation_status_total{status='success'}) by (operation) / sum(db_operation_status_total) by (operation) * 100",
+          "legendFormat": "{{operation}}"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          }
+        }
+      }
     }
   ],
   "refresh": "5s",
