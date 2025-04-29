@@ -21,6 +21,20 @@ promClient.collectDefaultMetrics({ register });
 app.use(metricsMiddleware(register));
 
 // Custom metrics
+const dbUpdateDuration = new promClient.Histogram({
+  name: 'db_update_duration_seconds',
+  help: 'Duration of PostgreSQL update operations in seconds',
+  labelNames: ['operation'],
+  buckets: [0.1, 0.5, 1, 2, 5],
+  registers: [register]
+});
+
+const updateCounter = new promClient.Counter({
+  name: 'db_updates_total',
+  help: 'Total number of update operations',
+  registers: [register]
+});
+
 const dbQueryDuration = new promClient.Histogram({
   name: 'db_query_duration_seconds',
   help: 'Duration of PostgreSQL queries in seconds',
@@ -76,7 +90,7 @@ async function insertData() {
     const [result] = await db('data_entries')
       .insert({
         payload,
-        payload2: smallPayload,
+        small_payload: smallPayload,
       })
       .returning(['id', 'payload', 'small_payload', 'created_at', 'updated_at']);
     
@@ -135,6 +149,34 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
+// Function to update random rows with new small_payload
+async function updateRandomRows() {
+  const end = dbUpdateDuration.startTimer({ operation: 'update' });
+  try {
+    // Get 5 random rows
+    const rows = await db('data_entries')
+      .select('id')
+      .orderBy(db.raw('RANDOM()'))
+      .limit(5);
+
+    for (const row of rows) {
+      const smallPayload = generateRandomData(true);
+      await db('data_entries')
+        .where('id', row.id)
+        .update({
+          small_payload: smallPayload,
+          updated_at: db.fn.now()
+        });
+    }
+    
+    updateCounter.inc(rows.length);
+    console.log(`Updated ${rows.length} rows with new small_payload data`);
+  } catch (err) {
+    console.error('Error updating random rows:', err);
+  }
+  end();
+}
+
 // Start the application
 async function startApp() {
   try {
@@ -143,8 +185,9 @@ async function startApp() {
     console.log('Migrations completed successfully');
 
     // Start the data operations
-    setInterval(insertData, 10000);  // Insert every 10 seconds
-    setInterval(readData, 15000);    // Read every 15 seconds
+    setInterval(insertData, 10000);      // Insert every 10 seconds
+    setInterval(readData, 15000);        // Read every 15 seconds
+    setInterval(updateRandomRows, 5000); // Update every 5 seconds
 
     // Start the server
     app.listen(port, () => {

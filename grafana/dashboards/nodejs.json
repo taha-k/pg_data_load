@@ -47,6 +47,34 @@
         "expr": "rate(process_cpu_user_seconds_total[5m])",
         "legendFormat": "CPU Usage"
       }]
+    },
+    {
+      "title": "Database Updates Rate",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [{
+        "expr": "rate(db_updates_total[5m])",
+        "legendFormat": "Updates/sec"
+      }]
+    },
+    {
+      "title": "Update Operation Duration",
+      "type": "graph",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [{
+        "expr": "rate(db_update_duration_seconds_sum{operation=\"update\"}[5m]) / rate(db_update_duration_seconds_count{operation=\"update\"}[5m])",
+        "legendFormat": "Avg Duration (seconds)"
+      }]
+    },
+    {
+      "title": "Update Duration Distribution",
+      "type": "heatmap",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+      "targets": [{
+        "expr": "sum(rate(db_update_duration_seconds_bucket{operation=\"update\"}[5m])) by (le)",
+        "format": "heatmap",
+        "legendFormat": "{{le}}"
+      }]
     }
   ],
   "refresh": "5s",
