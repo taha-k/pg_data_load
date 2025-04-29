@@ -122,7 +122,7 @@ async function readData() {
   const end = dbQueryDuration.startTimer({ operation: 'select' });
   try {
     const results = await db('data_entries')
-      .select('id', db.raw("payload - 'jsonData' as payload"), 'created_at', 'updated_at')
+      .select('id', 'small_payload', 'created_at', 'updated_at')
       .orderBy('created_at', 'desc')
       .limit(5);
     
@@ -130,9 +130,8 @@ async function readData() {
     operationStatus.labels('read', 'success').inc();
     console.log('Latest entries:', results.map(r => ({
       id: r.id,
-      type: r.payload.type,
-      event: r.payload.event,
-      status: r.payload.status,
+      event: r.small_payload.event,
+      status: r.small_payload.status,
       created_at: r.created_at
     })));
     return results;
