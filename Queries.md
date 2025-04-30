@@ -91,3 +91,10 @@ SELECT
     ms.* 
 FROM main_and_toast_stats ms;
 ```
+
+## Drop huge json column
+BEGIN;
+ALTER TABLE data_entries DROP COLUMN payload;
+
+SELECT CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Helsinki' AS local_time;
+COMMIT;

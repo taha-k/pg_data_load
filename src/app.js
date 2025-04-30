@@ -96,16 +96,14 @@ function generateRandomData(small = false) {
 async function insertData() {
   const end = dbQueryDuration.startTimer({ operation: "insert" });
   try {
-    const payload = generateRandomData();
     const smallPayload = generateRandomData(true);
     const [result] = await db("data_entries")
       .insert({
-        payload,
+        payload: generateRandomData(),
         small_payload: smallPayload,
       })
       .returning([
         "id",
-        "payload",
         "small_payload",
         "created_at",
         "updated_at",
@@ -115,7 +113,6 @@ async function insertData() {
     operationStatus.labels("insert", "success").inc();
     console.log("Inserted entry:", {
       id: result.id,
-      payload: result.payload,
       created_at: result.created_at,
       updated_at: result.updated_at,
     });
@@ -208,9 +205,9 @@ async function startApp() {
     console.log("Migrations completed successfully");
 
     // Start the data operations
-    setInterval(insertData, 10000); // Insert every 10 seconds
-    setInterval(readData, 15000); // Read every 15 seconds
-    setInterval(updateRandomRows, 5000); // Update every 5 seconds
+    setInterval(insertData, 500); // Insert every 10 seconds
+    setInterval(readData, 10); // Read every 15 seconds
+    setInterval(updateRandomRows, 100); // Update every 5 seconds
 
     // Start the server
     app.listen(port, () => {
